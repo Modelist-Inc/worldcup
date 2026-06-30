@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Fantasy World Cup Dashboard</title>
+  <style>
+    :root{
+      --bg:#050505; --panel:#020202; --panel2:#07121f; --text:#f7f7f7; --muted:#b8c5d6;
+      --blue:#128cff; --blue2:#0054b8; --yellow:#ffd51e; --green:#39d12f; --red:#f3443f;
+      --pink:#ff61c8; --white:#ffffff; --line:#1688ff; --shadow:0 0 0 4px #00172e,0 0 0 6px #1688ff;
+      --radius:0;
+    }
+    *{box-sizing:border-box}
+    html{image-rendering:pixelated}
+    body{
+      margin:0;color:var(--text);
+      font-family:"Courier New",ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+      background:
+        linear-gradient(#0c63c9 0 90px,#6bc34a 90px 125px,#050505 125px 100%);
+      min-height:100vh;
+      text-transform:uppercase;
+    }
+    body:before{
+      content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.22;
+      background:repeating-linear-gradient(0deg,rgba(255,255,255,.12) 0 1px,transparent 1px 4px);
+      mix-blend-mode:overlay;
+    }
+    .shell{max-width:1460px;margin:0 auto;padding:10px 14px 18px;border-top:5px dashed #fff;border-bottom:5px dashed #fff}
+    header{
+      display:grid;grid-template-columns:1.4fr .8fr;gap:14px;align-items:stretch;margin-bottom:8px;
+      background:
+        linear-gradient(180deg,#0e73dc 0,#0e73dc 62%,#4bb13d 62%,#4bb13d 100%);
+      border:4px solid #000;box-shadow:0 0 0 3px #fff inset;
+      padding:8px 10px;
+    }
+    .brand{
+      display:flex;align-items:center;gap:16px;padding:8px 12px;min-height:132px;
+      background:transparent;border:0;box-shadow:none;
+    }
+    .logo{
+      width:88px;height:88px;border:4px solid #111;background:#ffd51e;color:#111;display:grid;place-items:center;
+      font-size:48px;font-weight:900;border-radius:0;box-shadow:6px 6px 0 #000;
+    }
+    h1{
+      margin:0;font-size:48px;line-height:.92;letter-spacing:-4px;font-weight:900;color:#fff;
+      text-shadow:4px 0 #000,0 4px #000,4px 4px #000,0 -4px #000,-4px 0 #000,6px 6px 0 #0b3b8c;
+    }
+    h1::first-line{color:#ff72c8}
+    .subtitle{
+      display:inline-block;margin-top:10px;color:#ff72c8;font-size:20px;font-weight:900;letter-spacing:2px;
+      text-shadow:3px 3px 0 #000;
+    }
+    .actions{
+      display:flex;flex-direction:column;justify-content:center;align-items:center;gap:12px;min-height:132px;
+      background:#020202;border:4px solid #fff;box-shadow:0 0 0 4px #000,0 0 0 7px var(--blue);
+      padding:12px;
+    }
+    .status{font-size:12px;color:var(--green);font-weight:900;letter-spacing:1px}
+    button{
+      border:3px solid #fff;background:#0a0a0a;color:#fff;padding:8px 13px;border-radius:0;font-weight:900;
+      box-shadow:4px 4px 0 #000;cursor:pointer;text-transform:uppercase;font-family:inherit;
+    }
+    button:hover{background:#064f9f;color:#fff}
+    button.primary{background:#0e73dc;color:#fff;border-color:#fff}
+    button.danger{background:#0e73dc;color:#fff;border-color:#fff}
+    .tabs{
+      display:flex;gap:0;overflow:auto;margin:0 0 10px 0;padding:0;border-bottom:4px solid var(--blue);
+      background:#020202;
+    }
+    .tab{
+      white-space:nowrap;border:3px solid var(--blue);border-bottom:0;background:#080808;color:#fff;border-radius:0;
+      padding:10px 18px;font-weight:900;box-shadow:none;margin-right:-3px;text-transform:uppercase;font-family:inherit;
+    }
+    .tab.active{background:#0e73dc;color:#fff;border-color:#fff;box-shadow:inset 0 -4px 0 #003b80}
+    .grid{display:grid;grid-template-columns:2fr .9fr;gap:14px}.grid2{display:grid;grid-template-columns:1.08fr .92fr;gap:14px}.full{grid-column:1/-1}
+    .card{
+      background:#020202;border:4px solid var(--blue);border-radius:0;box-shadow:0 0 0 3px #001b38 inset,4px 4px 0 #000;
+      overflow:hidden;margin-bottom:14px;position:relative;
+    }
+    .cardHead{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px 0;
+      border-top:0;background:#020202;
+    }
+    .cardTitle{
+      font-size:22px;font-weight:900;color:var(--yellow);letter-spacing:1px;text-shadow:3px 3px 0 #000;
+    }
+    .cardBody{padding:10px 14px 14px;background:#020202}
+    .help{color:#6cc6ff;font-size:12px;line-height:1.35;font-weight:700}
+    table{width:100%;border-collapse:collapse;font-size:14px}
+    th,td{padding:9px 7px;border-bottom:1px solid #28435f;text-align:left;vertical-align:middle}
+    th{font-size:12px;color:#fff;font-weight:900;background:#050505}
+    th.sortable{cursor:pointer;color:#fff} th.sortable:hover{color:var(--yellow)}
+    td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+    tr:last-child td{border-bottom:0}
+    tbody tr:hover{background:#071b31}
+    .rank{font-weight:900;color:var(--yellow)}.medal{font-size:16px}
+    .metricRow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+    .metric{padding:13px;border:3px solid #174c81;background:#050505;border-radius:0}
+    .metricLabel{font-size:11px;color:#6cc6ff;font-weight:900}
+    .metricVal{font-size:34px;font-weight:900;margin-top:3px;color:var(--yellow);text-shadow:3px 3px 0 #000}
+    .pts{color:var(--yellow);font-weight:900}.proj{color:var(--green);font-weight:900}.games{color:#64d7ff;font-weight:900}.goals{color:#ff72c8;font-weight:900}
+    .pill{
+      display:inline-flex;align-items:center;gap:6px;padding:3px 7px;border-radius:0;background:#111;color:#fff;
+      font-size:12px;font-weight:900;margin:2px;border:2px solid #315b87;
+    }
+    .flagImg{width:24px;height:18px;border-radius:0;object-fit:cover;border:2px solid #fff;background:#fff;vertical-align:middle}
+    .view.hidden{display:none}
+    .notice{padding:10px 12px;border-radius:0;margin-bottom:12px;font-size:13px;border:3px solid #fff;font-weight:900}
+    .notice.ok{background:#072807;color:#9cff8f;border-color:#39d12f}
+    .notice.err{background:#35080a;color:#ffb2b2;border-color:#f3443f}
+    .match{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid #28435f}
+    .match:last-child{border-bottom:0}.matchSquads{font-weight:900}.matchMeta{font-size:12px;color:#6cc6ff;margin-top:3px}.matchImpact{font-size:12px;font-weight:900;text-align:right}
+    .teamCell{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .statusBadge{display:inline-flex;align-items:center;border-radius:0;padding:3px 7px;font-size:11px;font-weight:900;border:2px solid #fff}
+    .statusBadge.active{background:#0d3a0a;color:#86ff7a;border-color:#39d12f}
+    .statusBadge.eliminated{background:#360808;color:#ff9898;border-color:#f3443f}
+    .statusBadge.unknown{background:#1a1a1a;color:#fff;border-color:#777}
+    .activeRow{background:#071d0b}.eliminatedRow{opacity:.52}
+    .ownerStack{display:flex;gap:6px;flex-wrap:wrap}
+    .ownerChip{display:inline-flex;align-items:center;border-radius:0;background:#091a2e;color:#fff;font-size:12px;font-weight:900;padding:4px 7px;border:2px solid #315b87}
+    .bracketWrap{overflow:auto;padding-bottom:8px}
+    .bracket{display:grid;grid-template-columns:repeat(5,230px);gap:14px;min-width:1170px}
+    .roundTitle{font-size:13px;color:#fff;font-weight:900;margin:0 0 9px;text-align:center}
+    .game{border:3px solid #9b9b9b;border-radius:0;background:#030303;margin-bottom:12px;overflow:hidden}
+    .gameLabel{padding:6px 8px;background:#111;border-bottom:2px solid #777;font-size:10px;color:#6cc6ff;font-weight:900}
+    .pickSquad{
+      display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;border:0;border-radius:0;background:#020202;
+      padding:8px 9px;text-align:left;color:#fff;box-shadow:none;font-family:inherit;
+    }
+    .pickSquad + .pickSquad{border-top:2px solid #444}
+    .pickSquad:hover{background:#062e58}
+    .pickSquad.selected{background:#0b3b10;color:#fff;box-shadow:inset 0 0 0 3px var(--green)}
+    .pickLeft{display:flex;align-items:center;gap:8px;min-width:0}.pickName{font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.seed{font-size:10px;color:var(--yellow)}
+    .emptySlot{padding:10px;color:#777;font-size:12px;background:#030303}
+    .scenarioControls{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin:10px 0 14px}
+    .field{display:flex;flex-direction:column;gap:4px}.field label{font-size:10px;color:#6cc6ff;font-weight:900}
+    .field input,.field select,select{
+      width:92px;border:3px solid #fff;border-radius:0;padding:7px;background:#020202;color:#fff;font-weight:900;font-family:inherit;
+    }
+    .championBox{border:4px solid var(--yellow);background:#020202;border-radius:0;padding:13px;margin-bottom:12px;box-shadow:4px 4px 0 #000}
+    .championBox .big{font-size:26px;font-weight:900;color:#fff;text-shadow:3px 3px 0 #000}
+    @media(max-width:900px){
+      .shell{padding:8px}header{display:block}.brand,.actions{min-height:auto;margin-bottom:8px}.logo{width:58px;height:58px;font-size:30px}h1{font-size:32px;letter-spacing:-2px}
+      .grid,.grid2{display:block}.card{margin-bottom:12px}th,td{padding:8px 5px;font-size:12px}.hideMobile{display:none}.metricRow{grid-template-columns:1fr}.bracket{grid-template-columns:repeat(5,210px);min-width:1090px}
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <div class="brand">
+      <div class="logo">⚽</div>
+      <div><h1>Fantasy<br>World Cup 2026</h1><div class="subtitle">Pick. Play. Win. Proper Football.</div></div>
+    </div>
+    <div class="actions"><div class="status" id="lastFeed Updated">Loading...</div><button class="primary" onclick="loadData()">Refresh Feed</button></div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="leaderboard">Table</button>
+    <button class="tab" data-tab="knockout">Knockout Draw</button>
+    <button class="tab" data-tab="matches">Fixtures</button>
+    <button class="tab" data-tab="players">Golden Boot</button>
+    <button class="tab" data-tab="teamGaffership">Squads</button>
+    <button class="tab" data-tab="teams">Squad Detail</button>
+  </div>
+
+  <section id="leaderboard" class="view">
+    <div id="statusBox"></div>
+    <div class="grid">
+      <div class="card">
+        <div class="cardHead"><div class="cardTitle">League Table</div><div class="help">Sort the table, if you fancy it</div></div>
+        <div class="cardBody"><table id="leaderboardTable"></table></div>
+      </div>
+      <aside>
+        <div class="card">
+          <div class="cardHead"><div class="cardTitle">Tournament Programme</div></div>
+          <div class="cardBody">
+            <div class="metricRow" style="grid-template-columns:1fr">
+              <div class="metric"><div class="metricLabel">Potential Fixtures Left</div><div class="metricVal games" id="totalRemaining">0</div></div>
+              <div class="metric"><div class="metricLabel">Fixtures Loaded</div><div class="metricVal" id="totalFixtures">0</div></div>
+              <div class="metric"><div class="metricLabel">Live Fixtures</div><div class="metricVal pts" id="liveFixtures">0</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="cardHead"><div class="cardTitle">Golden Boot Watch</div></div>
+          <div class="cardBody"><table id="miniStrikerTable"></table></div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section id="knockout" class="view hidden">
+    <div class="card">
+      <div class="cardHead"><div><div class="cardTitle">Knockout Draw Predictor</div><div class="help">Actual knockout draw from ESPN. Pick future winners, send them through the proper path, and watch the table change like a Saturday tea-time shocker.</div></div><button class="danger" onclick="resetScenario()">Reset Picks</button></div>
+      <div class="cardBody">
+        <div class="scenarioControls">
+          <div class="field"><label>Now Tie</label>
+            <select id="currentRound" style="width:135px;border:1px solid var(--line);border-radius:10px;padding:9px;background:#fff;font-weight:800">
+              <option value="r32" selected>Last 32</option>
+              <option value="r16">Last 16</option>
+              <option value="qf">Quarter-finals</option>
+              <option value="sf">Semi-finals</option>
+              <option value="f">Final</option>
+            </select>
+          </div>
+          <div class="field"><label>Early Tie Win</label><input id="ptsR16" type="number" value="3"></div>
+          <div class="field"><label>Quarter Win</label><input id="ptsQF" type="number" value="3"></div>
+          <div class="field"><label>Semi Win</label><input id="ptsSF" type="number" value="3"></div>
+          <div class="field"><label>Final Win</label><input id="ptsF" type="number" value="3"></div>
+          <div class="field"><label>Cup Bonus</label><input id="ptsChamp" type="number" value="0"></div>
+        </div>
+        <div class="grid2">
+          <div>
+            <div class="championBox"><div class="help">Projectionected Cup Winner</div><div class="big" id="championName">No cup winner picked</div></div>
+            <div class="bracketWrap"><div class="bracket" id="bracket"></div></div>
+          </div>
+          <div>
+            <div class="card" style="box-shadow:none;margin:0"><div class="cardHead"><div class="cardTitle">What‑If Table</div></div><div class="cardBody"><table id="scenarioTable"></table></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="matches" class="view hidden"><div class="card"><div class="cardHead"><div class="cardTitle">Fixture List</div></div><div class="cardBody" id="matchList"></div></div></section>
+  <section id="players" class="view hidden"><div class="card"><div class="cardHead"><div class="cardTitle">Golden Boot Tracker</div></div><div class="cardBody"><table id="playerTable"></table></div></div></section>
+  <section id="teamGaffership" class="view hidden">
+    <div class="card">
+      <div class="cardHead"><div><div class="cardTitle">Squads / Gaffership</div><div class="help">Every nation in the tournament, who owns the shirt, current points, projected points, and possible fixtures left from the current tie.</div></div></div>
+      <div class="cardBody"><table id="teamGaffershipTable"></table></div>
+    </div>
+  </section>
+  <section id="teams" class="view hidden"><div id="teamCards"></div></section>
+</div>
+
+<script>
+const DATE_RANGE = "20260611-20260719";
+const ESPN_URL = `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?limit=1000&dates=${DATE_RANGE}`;
+const rosters = [
+  {owner:"Birk", name:"Squad 1", player:"Kane", teams:["England","Germany"]},
+  {owner:"Birk", name:"Squad 2", player:"Vini Jr", teams:["Brazil","Netherlands","Uzbekistan"]},
+  {owner:"Wenz", name:"", player:"Mbappe", teams:["France","Japan","Egypt"]},
+  {owner:"Parkin", name:"Squad 1", player:"Mbappe", teams:["France","Germany"]},
+  {owner:"Parkin", name:"Squad 2", player:"Messi", teams:["Argentina","Mexico","Paraguay"]},
+  {owner:"Newsy", name:"Squad 1", player:"Mbappe", teams:["France","Netherlands","Uzbekistan"]},
+  {owner:"Newsy", name:"Squad 2", player:"Ronaldo", teams:["Portugal","Morocco","Ecuador"]},
+  {owner:"Mallen", name:"Squad 1", player:"Lukaku", teams:["Belgium","South Korea","Algeria","Saudi Arabia","Uzbekistan","Haiti","Curacao"]},
+  {owner:"Mallen", name:"Squad 2", player:"Pulisic", teams:["USA","Canada","Austria","Bosnia","Panama"]},
+  {owner:"Schwert", name:"", player:"Mbappe", teams:["Spain","Netherlands","Iraq"]},
+  {owner:"Ball", name:"", player:"Mbappe", teams:["Mexico","USA","Morocco","Bosnia"]},
+  {owner:"KC", name:"Squad 1", player:"Kane", teams:["England","Germany"]},
+  {owner:"KC", name:"Squad 2", player:"Mbappe", teams:["France","Morocco","Senegal"]},
+  {owner:"Myers", name:"Squad 1", player:"Ronaldo", teams:["Portugal","Japan","Morocco"]},
+  {owner:"Myers", name:"Squad 2", player:"Martinez", teams:["Argentina","Japan","South Korea","Haiti"]},
+  {owner:"Steggy", name:"Squad 1", player:"Kane", teams:["USA","Senegal","South Korea","Colombia"]},
+  {owner:"Steggy", name:"Squad 2", player:"Mbappe", teams:["France","Morocco","South Korea"]},
+  {owner:"Q", name:"", player:"Haaland", teams:["Mexico","Turkey","Germany"]}
+];
+const teamAliases = {"United States":"USA","USA":"USA","Korea Republic":"South Korea","Republic of Korea":"South Korea","Türkiye":"Turkey","Turkiye":"Turkey","Curaçao":"Curacao","Curacau":"Curacao","Columbia":"Colombia","Bosnia and Herzegovina":"Bosnia","Bosnia-Herzegovina":"Bosnia","Uzbekestan":"Uzbekistan"};
+const playerAliases = {"Mbappe":["Mbappe","Mbappé","Kylian Mbappe","Kylian Mbappé"],"Kane":["Kane","Harry Kane"],"Messi":["Messi","Lionel Messi"],"Ronaldo":["Ronaldo","Cristiano Ronaldo"],"Pulisic":["Pulisic","Christian Pulisic"],"Lukaku":["Lukaku","Romelu Lukaku"],"Haaland":["Haaland","Erling Haaland","Erling Braut Haaland"],"Martinez":["Martinez","Martínez","Lautaro Martinez","Lautaro Martínez"],"Vini Jr":["Vini Jr","Vinicius","Vinícius","Vinicius Junior","Vinícius Júnior","Vini"]};
+const eloRatings = {"Argentina":2144,"Spain":2134,"France":2084,"England":2055,"Colombia":1998,"Brazil":1990,"Portugal":1975,"Netherlands":1965,"Germany":1945,"Belgium":1905,"Mexico":1845,"USA":1835,"Morocco":1815,"Japan":1805,"Austria":1790,"Senegal":1785,"Ecuador":1775,"Turkey":1765,"South Korea":1750,"Canada":1735,"Paraguay":1725,"Algeria":1700,"Egypt":1695,"Bosnia":1665,"Saudi Arabia":1625,"Panama":1590,"Uzbekistan":1585,"Iraq":1575,"Haiti":1510,"Curacao":1495};
+
+let app = {matches:[], teamStats:{}, playerGoals:{}, standings:[], teamLogos:{}};
+let sortState = {key:"projectedFinal", dir:"desc"};
+let scenario = JSON.parse(localStorage.getItem("wcKnockoutScenario") || "{}");
+
+function normSquad(t){ const clean=String(t||"").trim(); return teamAliases[clean] || clean; }
+function normStriker(p){ return String(p||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase(); }
+function rosterLabel(r){ return `${r.owner}${r.name ? " " + r.name : ""}`; }
+function logo(team){ const src=app.teamLogos[normSquad(team)]; return src ? `<img class="flagImg" src="${src}" alt="">` : `<span class="flagImg"></span>`; }
+function emptySquadStat(){ return {played:0,w:0,d:0,l:0,points:0,gf:0,ga:0,remaining:0,projectedRemaining:0,matches:[]}; }
+function eloProjectionection(homeSquad, awaySquad){ const h=eloRatings[homeSquad]??1500,a=eloRatings[awaySquad]??1500,d=h-a; const hnd=1/(1+Math.pow(10,-d/400)); const dp=Math.max(.12,Math.min(.30,.28-Math.abs(d)/2500)); const hp=hnd*(1-dp), ap=(1-hnd)*(1-dp); return {homeExp:3*hp+dp, awayExp:3*ap+dp}; }
+function eventStatus(event){ const st=event.status?.type||{}; return {completed:!!st.completed,inProgress:["STATUS_IN_PROGRESS","STATUS_HALFTIME","STATUS_END_PERIOD"].includes(st.name)||st.state==="in",scheduled:st.state==="pre"||st.name==="STATUS_SCHEDULED",text:st.shortDetail||st.description||""}; }
+function scoreEventScorers(event){ const names=[]; for(const comp of event.competitions||[]){ for(const d of comp.details||[]){ const type=(d.type?.text||d.type||"").toLowerCase(); if(type.includes("goal")||type.includes("penalty - scored")){ for(const a of (d.athletesInvolved||d.athletes||[])){ const n=a.displayName||a.shortName||a.fullName; if(n) names.push(n); } if(d.athlete?.displayName) names.push(d.athlete.displayName); } } } return names; }
+function processEvents(events){
+  const teamStats={}, playerGoals={}, logos={}; Object.keys(playerAliases).forEach(p=>playerGoals[p]=0); const matches=[];
+  for(const event of events){
+    const comp=event.competitions?.[0]; if(!comp||!comp.competitors||comp.competitors.length<2) continue;
+    const home=comp.competitors.find(c=>c.homeAway==="home")||comp.competitors[0], away=comp.competitors.find(c=>c.homeAway==="away")||comp.competitors[1];
+    const homeSquad=normSquad(home.team?.displayName||home.team?.shortDisplayName||home.team?.name), awaySquad=normSquad(away.team?.displayName||away.team?.shortDisplayName||away.team?.name);
+    [home,away].forEach(c=>{ const nm=normSquad(c.team?.displayName||c.team?.shortDisplayName||c.team?.name); const lg=c.team?.logo || c.team?.logos?.[0]?.href; if(lg) logos[nm]=lg; });
+    const hs=Number(home.score||0), as=Number(away.score||0), st=eventStatus(event); [homeSquad,awaySquad].forEach(t=>{if(!teamStats[t]) teamStats[t]=emptySquadStat()});
+    const proj=eloProjectionection(homeSquad,awaySquad); const row={date:event.date,name:event.name,homeSquad,awaySquad,hs,as,status:st,display:event.shortName||event.name,homeExp:proj.homeExp,awayExp:proj.awayExp};
+    if(st.completed||st.inProgress){
+      teamStats[homeSquad].played++; teamStats[awaySquad].played++; teamStats[homeSquad].gf+=hs; teamStats[homeSquad].ga+=as; teamStats[awaySquad].gf+=as; teamStats[awaySquad].ga+=hs;
+      let hp=0,ap=0;
+      const knockoutMatch = (event.season?.type || 0) >= 3 || /round|quarter|semi|final/i.test(event.name||"");
+      if(hs>as){
+        hp=3;teamStats[homeSquad].w++;teamStats[awaySquad].l++;
+      } else if(as>hs){
+        ap=3;teamStats[awaySquad].w++;teamStats[homeSquad].l++;
+      } else if(knockoutMatch && (home.winner===true || away.winner===true)){
+        if(home.winner===true){
+          hp=3;teamStats[homeSquad].w++;teamStats[awaySquad].l++;
+        } else {
+          ap=3;teamStats[awaySquad].w++;teamStats[homeSquad].l++;
+        }
+      } else {
+        hp=1;ap=1;teamStats[homeSquad].d++;teamStats[awaySquad].d++;
+      }
+      teamStats[homeSquad].points+=hp; teamStats[awaySquad].points+=ap; row.homePts=hp; row.awayPts=ap;
+      for(const scorer of scoreEventScorers(event)){ const s=normStriker(scorer); for(const [key,aliases] of Object.entries(playerAliases)){ if(aliases.some(a=>s.includes(normStriker(a)))) playerGoals[key]++; } }
+    } else { teamStats[homeSquad].remaining++; teamStats[awaySquad].remaining++; teamStats[homeSquad].projectedRemaining+=proj.homeExp; teamStats[awaySquad].projectedRemaining+=proj.awayExp; }
+    teamStats[homeSquad].matches.push(row); teamStats[awaySquad].matches.push(row); matches.push(row);
+  }
+  return {teamStats,playerGoals,matches,teamLogos:logos};
+}
+
+function allCountries(){
+  return [...new Set(rosters.flatMap(r=>r.teams.map(normSquad)))].filter(Boolean).sort();
+}
+function ownersByNation(){
+  const map={};
+  for(const r of rosters){
+    for(const t of r.teams.map(normSquad)){
+      if(!map[t]) map[t]=[];
+      map[t].push(rosterLabel(r));
+    }
+  }
+  return map;
+}
+function completedRecord(country){
+  const s=app.teamStats[normSquad(country)]||emptySquadStat();
+  return {points:s.points, played:s.played, remainingScheduled:s.remaining};
+}
+function isEliminated(country){
+  const c=normSquad(country);
+  // A team is treated as eliminated if it has no future scheduled match in ESPN data.
+  // Before knockout qualification is fully known, this is a practical live-dashboard approximation.
+  const hasFuture=app.matches.some(m=>!m.status.completed && !m.status.inProgress && (m.homeSquad===c || m.awaySquad===c));
+  const hasLive=app.matches.some(m=>m.status.inProgress && (m.homeSquad===c || m.awaySquad===c));
+  return !hasFuture && !hasLive && app.matches.length>0;
+}
+function getNowRound(){
+  return document.getElementById("currentRound")?.value || "r32";
+}
+function maxPotentialFromRound(round){
+  return ({r32:5,r16:4,qf:3,sf:2,f:1})[round] || 5;
+}
+function potentialGamesLeftForNation(country){
+  const c=normSquad(country);
+  const currentRound=getNowRound();
+
+  // If eliminated, potential games left is zero.
+  const hasFutureScheduled=app.matches.some(m=>!m.status.completed && !m.status.inProgress && (m.homeSquad===c || m.awaySquad===c));
+  const hasLive=app.matches.some(m=>m.status.inProgress && (m.homeSquad===c || m.awaySquad===c));
+
+  // If the user has advanced this team in the what-if bracket, use its deepest selected round.
+  // Example: selected as quarterfinal winner means it could still play semi + final = 2 more from there,
+  // but for "potential games left" before that quarter is played, quarters = 3.
+  const roundPotential={r32:5,r16:4,qf:3,sf:2,f:1};
+  let bestScenarioPotential=0;
+  for(const [id,winner] of Object.entries(scenario)){
+    if(winner===c){
+      const round=id.split("_")[0];
+      bestScenarioPotential=Math.max(bestScenarioPotential, roundPotential[round]||0);
+    }
+  }
+
+  if(bestScenarioPotential>0) return bestScenarioPotential;
+
+  // Main live logic:
+  // Before the full bracket is known, teams still alive should get the maximum possible games left
+  // from the selected current round, not just the games ESPN has already scheduled.
+  // Last 32 = 5, Last 16 = 4, Quarters = 3, Semis = 2, Final = 1.
+  if(hasFutureScheduled || hasLive) return maxPotentialFromRound(currentRound);
+
+  return 0;
+}
+function countryStatus(country){
+  const c=normSquad(country);
+  const potential=potentialGamesLeftForNation(c);
+  if(potential>0) return {key:"active", label:"Still In The Cup"};
+  return {key:"eliminated", label:"Out Of The Cup"};
+}
+function buildStandings(){
+  const rows=rosters.map((r,i)=>{ let points=0,rem=0,projRem=0,potentialRem=0,details=[]; for(const t of r.teams){ const nt=normSquad(t); const s=app.teamStats[nt]||emptySquadStat(); const potentialLeft=potentialGamesLeftForNation(nt); const status=countryStatus(nt); points+=s.points; rem+=s.remaining; potentialRem+=potentialLeft; projRem+=s.projectedRemaining; details.push({team:nt,potentialLeft,status,...s}); } const goals=app.playerGoals[r.player]??0; return {...r,id:i,label:rosterLabel(r),current:points,playerGoals:goals,gamesRemaining:potentialRem,scheduledGamesRemaining:rem,projectedRemaining:projRem,projectedFinal:points+projRem,details}; });
+  const key=sortState.key, dir=sortState.dir==="asc"?1:-1; rows.sort((a,b)=>{ const av=a[key], bv=b[key]; if(typeof av==="string") return dir*String(av).localeCompare(String(bv)); return dir*((av??0)-(bv??0)) || (b.current-a.current) || (b.playerGoals-a.playerGoals); }); app.standings=rows;
+}
+function sortBy(key){ if(sortState.key===key) sortState.dir=sortState.dir==="asc"?"desc":"asc"; else{sortState.key=key;sortState.dir=["label","player"].includes(key)?"asc":"desc";} render(); }
+function th(label,key,cls=""){ const mark=sortState.key===key ? (sortState.dir==="asc"?" ▲":" ▼") : ""; return `<th class="sortable ${cls}" onclick="sortBy('${key}')">${label}${mark}</th>`; }
+function renderTable(){ buildStandings(); document.getElementById("leaderboardTable").innerHTML=`<thead><tr><th>Pos</th>${th("Gaffer","label")}<th class="hideMobile">Countries</th>${th("Now","current","num")}${th("Projectionected","projectedFinal","num")}${th("Potential Fixtures Left","gamesRemaining","num")}${th("Striker","player")}${th("Goals","playerGoals","num")}</tr></thead><tbody>${app.standings.map((r,i)=>`<tr><td class="rank"><span class="medal">${i===0?"🥇":i===1?"🥈":i===2?"🥉":i+1}</span></td><td><b>${r.label}</b></td><td class="hideMobile">${r.teams.map(t=>`<span class="pill">${logo(t)}${normSquad(t)}</span>`).join("")}</td><td class="num pts">${r.current}</td><td class="num proj">${r.projectedFinal.toFixed(1)}</td><td class="num games">${r.gamesRemaining}</td><td>${r.player}</td><td class="num goals">${r.playerGoals}</td></tr>`).join("")}</tbody>`; }
+function renderStrikers(){ const rows=Object.keys(playerAliases).map(p=>({player:p,goals:app.playerGoals[p]||0})).sort((a,b)=>b.goals-a.goals); document.getElementById("miniStrikerTable").innerHTML=`<tbody>${rows.slice(0,8).map((r,i)=>`<tr><td>${i+1}</td><td><b>${r.player}</b></td><td class="num goals">${r.goals}</td></tr>`).join("")}</tbody>`; document.getElementById("playerTable").innerHTML=`<thead><tr><th>Striker</th><th class="num">Goals</th><th>Picked By</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${r.player}</b></td><td class="num goals">${r.goals}</td><td>${rosters.filter(x=>x.player===r.player).map(x=>`<span class="pill">${rosterLabel(x)}</span>`).join("")}</td></tr>`).join("")}</tbody>`; }
+function renderSquads(){ document.getElementById("teamCards").innerHTML=app.standings.map(r=>`<div class="card"><div class="cardHead"><div><div class="cardTitle">${r.label}</div><div class="help">${r.player}: ${r.playerGoals} goals • Possible fixtures left: ${r.gamesRemaining}</div></div></div><div class="cardBody"><table><thead><tr><th>Nation</th><th>Status</th><th class="num">Pts</th><th class="num">Possible Fixtures</th><th class="num">Expected Left</th><th class="num">Projection</th></tr></thead><tbody>${r.details.map(d=>`<tr class="${d.status.key==='active'?'activeRow':d.status.key==='eliminated'?'eliminatedRow':''}"><td><div class="teamCell">${logo(d.team)}<b>${d.team}</b><span class="help">${d.w}-${d.d}-${d.l}, GF ${d.gf}, GA ${d.ga}</span></div></td><td><span class="statusBadge ${d.status.key}">${d.status.label}</span></td><td class="num pts">${d.points}</td><td class="num games">${d.potentialLeft}</td><td class="num proj">${d.projectedRemaining.toFixed(1)}</td><td class="num proj">${(d.points+d.projectedRemaining).toFixed(1)}</td></tr>`).join("")}</tbody></table></div></div>`).join(""); }
+
+function renderSquadGaffership(){
+  const owners=ownersByNation();
+  const countries=allCountries();
+  const rows=countries.map(c=>{
+    const s=app.teamStats[c]||emptySquadStat();
+    const potential=potentialGamesLeftForNation(c);
+    const status=countryStatus(c);
+    return {country:c, owners:owners[c]||[], points:s.points, projected:(s.points+s.projectedRemaining), potential, status, record:`${s.w}-${s.d}-${s.l}`};
+  }).sort((a,b)=>b.points-a.points || b.potential-a.potential || a.country.localeCompare(b.country));
+  document.getElementById("teamGaffershipTable").innerHTML=`<thead><tr><th>Nation</th><th>Status</th><th>Gaffers</th><th class="num">Pts</th><th class="num">Possible Fixtures</th><th class="num">Projectionected</th></tr></thead><tbody>${rows.map(r=>`<tr class="${r.status.key==='active'?'activeRow':r.status.key==='eliminated'?'eliminatedRow':''}"><td><div class="teamCell">${logo(r.country)}<b>${r.country}</b><span class="help">${r.record}</span></div></td><td><span class="statusBadge ${r.status.key}">${r.status.label}</span></td><td><div class="ownerStack">${r.owners.map(o=>`<span class="ownerChip">${o}</span>`).join("")}</div></td><td class="num pts">${r.points}</td><td class="num games">${r.potential}</td><td class="num proj">${r.projected.toFixed(1)}</td></tr>`).join("")}</tbody>`;
+}
+
+function matchLine(m){ const dt=new Date(m.date), isDone=m.status.completed||m.status.inProgress; return `<div class="match"><div><div class="matchSquads">${logo(m.homeSquad)} ${m.homeSquad} ${isDone?m.hs:""} - ${isDone?m.as:""} ${logo(m.awaySquad)} ${m.awaySquad}</div><div class="matchMeta">${dt.toLocaleString([], {month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})} • ${m.status.text||"Scheduled"}</div></div><div class="matchImpact ${isDone?'pts':'proj'}">${isDone?`${m.homeSquad} +${m.homePts}, ${m.awaySquad} +${m.awayPts}`:`Exp ${m.homeExp.toFixed(1)} / ${m.awayExp.toFixed(1)}`}</div></div>`; }
+function renderFixtures(){ const sorted=[...app.matches].sort((a,b)=>new Date(a.date)-new Date(b.date)); document.getElementById("matchList").innerHTML=sorted.map(matchLine).join(""); }
+function renderStats(){ const rem=app.matches.filter(m=>!m.status.completed&&!m.status.inProgress).length; document.getElementById("totalRemaining").textContent=rem; document.getElementById("totalFixtures").textContent=app.matches.length; document.getElementById("liveFixtures").textContent=app.matches.filter(m=>m.status.inProgress).length; }
+
+function roundKeyForMatch(m){
+  const d=new Date(m.date);
+  const ymd=d.toISOString().slice(0,10);
+  const nm=(m.name||m.display||"").toLowerCase();
+
+  if(/third|3rd/.test(nm)) return "third";
+  if(/final/.test(nm) && !/semi/.test(nm) && !/quarter/.test(nm)) return "f";
+  if(/semi/.test(nm)) return "sf";
+  if(/quarter/.test(nm)) return "qf";
+  if(/round of 16|last 16/.test(nm)) return "r16";
+  if(/round of 32|last 32/.test(nm)) return "r32";
+
+  // 2026 World Cup knockout date windows.
+  if(ymd >= "2026-06-28" && ymd <= "2026-07-03") return "r32";
+  if(ymd >= "2026-07-04" && ymd <= "2026-07-07") return "r16";
+  if(ymd >= "2026-07-09" && ymd <= "2026-07-11") return "qf";
+  if(ymd >= "2026-07-14" && ymd <= "2026-07-15") return "sf";
+  if(ymd === "2026-07-19") return "f";
+  return null;
+}
+function actualRoundGames(round){
+  return app.matches
+    .filter(m=>roundKeyForMatch(m)===round)
+    .sort((a,b)=>new Date(a.date)-new Date(b.date));
+}
+function actualBracketR32Squads(){
+  const games=actualRoundGames("r32");
+  if(games.length){
+    const teams=[];
+    for(const g of games.slice(0,16)){
+      teams.push(g.homeSquad || null, g.awaySquad || null);
+    }
+    while(teams.length < 32) teams.push(null);
+    return teams.slice(0,32);
+  }
+
+  // Fallback only if ESPN has not exposed the bracket yet.
+  // This keeps the page usable, but once actual R32 events exist, this is never used.
+  const owned=[...new Set(rosters.flatMap(r=>r.teams.map(normSquad)))].filter(Boolean);
+  return owned.sort((a,b)=>(eloRatings[b]??1500)-(eloRatings[a]??1500)).slice(0,32);
+}
+function actualKnownWinner(round, gameIndex){
+  const games=actualRoundGames(round);
+  const g=games[gameIndex];
+  if(!g || !(g.status.completed || g.status.inProgress)) return null;
+  if(g.hs>g.as) return g.homeSquad;
+  if(g.as>g.hs) return g.awaySquad;
+
+  // If tied in a knockout match, ESPN winner flags are captured on raw events only in some feeds.
+  // Our processed match object may not contain those flags, so user what-if picks can still override.
+  return null;
+}
+function bracketSquadsForRound(round){
+  if(round==="r32") return actualBracketR32Squads();
+
+  const prev={r16:"r32",qf:"r16",sf:"qf",f:"sf"}[round];
+  const prevGameCount={r16:16,qf:8,sf:4,f:2}[round];
+  const teams=[];
+
+  for(let i=0;i<prevGameCount;i++){
+    const known=actualKnownWinner(prev,i);
+    const picked=scenario[`${prev}_${i}`];
+    teams.push(known || picked || null);
+  }
+
+  return teams;
+}
+function getInitialKnockoutSquads(){
+  return actualBracketR32Squads().filter(Boolean);
+}
+function saveScenario(){ localStorage.setItem("wcKnockoutScenario", JSON.stringify(scenario)); }
+function setWinner(round, game, team){ const id=`${round}_${game}`; if(scenario[id]===team) delete scenario[id]; else scenario[id]=team; clearDownstream(round); saveScenario(); render(); }
+function clearDownstream(round){ const order=["r32","r16","qf","sf","f"], idx=order.indexOf(round); order.slice(idx+1).forEach(r=>Object.keys(scenario).filter(k=>k.startsWith(r+"_")).forEach(k=>delete scenario[k])); }
+function roundSquads(round){ return bracketSquadsForRound(round); }
+function teamButton(round,i,t,selected){
+  const safe=String(t).replace(/'/g,"\\'");
+  const locked=actualKnownWinner(round,i);
+  const disabled=locked ? "disabled" : "";
+  const click=locked ? "" : `onclick="setWinner('${round}',${i},'${safe}')"`;
+  return `<button class="pickSquad ${selected===t?'selected':''}" ${click} ${disabled}><span class="pickLeft">${logo(t)}<span class="pickName">${t}</span></span><span class="seed">${locked===t?'THRU':(eloRatings[t]||1500)}</span></button>`;
+}
+function renderGame(round,i,teams){
+  const t1=teams[i*2], t2=teams[i*2+1];
+  const known=actualKnownWinner(round,i);
+  const selected=known || scenario[`${round}_${i}`];
+  const games=actualRoundGames(round);
+  const actual=games[i];
+  const dt=actual ? new Date(actual.date).toLocaleString([], {month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}) : "";
+  const label=actual ? `${round.toUpperCase()} • ${dt}` : `Tie ${i+1}`;
+  return `<div class="game"><div class="gameLabel">${label}</div>${t1?teamButton(round,i,t1,selected):`<div class="emptySlot">Awaiting previous tie</div>`}${t2?teamButton(round,i,t2,selected):`<div class="emptySlot">Awaiting previous tie</div>`}</div>`;
+}
+function renderKnockout(){ const rounds=[["r32","Last 32",16],["r16","Last 16",8],["qf","Quarters",4],["sf","Semis",2],["f","Final",1]]; document.getElementById("bracket").innerHTML=rounds.map(([key,title,count])=>{ const teams=roundSquads(key); return `<div><div class="roundTitle">${title}</div>${Array.from({length:count},(_,i)=>renderGame(key,i,teams)).join("")}</div>`; }).join(""); const champ=scenario["f_0"]; document.getElementById("championName").innerHTML=champ ? `${logo(champ)} ${champ}` : "No cup winner picked"; renderScenarioTable(); }
+function renderScenarioTable(){ buildStandings(); const pts={r32:Number(document.getElementById("ptsR16")?.value||3),r16:Number(document.getElementById("ptsR16")?.value||3),qf:Number(document.getElementById("ptsQF")?.value||3),sf:Number(document.getElementById("ptsSF")?.value||3),f:Number(document.getElementById("ptsF")?.value||3),champ:Number(document.getElementById("ptsChamp")?.value||0)}; const picks=Object.entries(scenario).map(([id,winner])=>({round:id.split("_")[0],winner})).filter(x=>x.winner); if(scenario["f_0"]) picks.push({round:"champ",winner:scenario["f_0"]}); const rows=app.standings.map(r=>{ const bonus=picks.reduce((sum,p)=>sum+(r.teams.map(normSquad).includes(p.winner)?pts[p.round]:0),0); return {...r,scenarioBonus:bonus,scenarioScore:r.current+bonus}; }).sort((a,b)=>b.scenarioScore-a.scenarioScore||b.current-a.current||b.playerGoals-a.playerGoals); document.getElementById("scenarioTable").innerHTML=`<thead><tr><th>Pos</th><th>Gaffer</th><th class="num">Now</th><th class="num">What‑If</th><th class="num">Score</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td class="rank">${i+1}</td><td><b>${r.label}</b></td><td class="num pts">${r.current}</td><td class="num games">${r.scenarioBonus}</td><td class="num proj">${r.scenarioScore}</td></tr>`).join("")}</tbody>`; }
+function resetScenario(){ scenario={}; saveScenario(); render(); }
+function render(){ renderTable(); renderStrikers(); renderSquads(); renderSquadGaffership(); renderFixtures(); renderStats(); renderKnockout(); }
+async function loadData(){ document.getElementById("statusBox").innerHTML=`<div class="notice ok">Fetching the football feed from ESPN...</div>`; try{ const res=await fetch(ESPN_URL,{cache:"no-store"}); if(!res.ok) throw new Error(`ESPN request failed: ${res.status}`); const data=await res.json(); app={...app,...processEvents(data.events||[])}; render(); document.getElementById("lastFeed Updated").textContent=`Feed Updated ${new Date().toLocaleString()}`; document.getElementById("statusBox").innerHTML=`<div class="notice ok">${(data.events||[]).length} fixtures loaded. Auto-refresh every 60 seconds.</div>`; }catch(err){ document.getElementById("statusBox").innerHTML=`<div class="notice err"><b>Could not load the ESPN football feed.</b><br>${err.message}<br>Host this on GitHub Pages rather than opening locally on iPhone.</div>`; render(); } }
+document.querySelectorAll(".tab").forEach(tab=>tab.addEventListener("click",()=>{ document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active")); document.querySelectorAll(".view").forEach(v=>v.classList.add("hidden")); tab.classList.add("active"); document.getElementById(tab.dataset.tab).classList.remove("hidden"); }));
+["ptsR16","ptsQF","ptsSF","ptsF","ptsChamp"].forEach(id=>document.addEventListener("input",e=>{ if(e.target.id===id) renderScenarioTable(); }));
+document.addEventListener("change",e=>{ if(e.target.id==="currentRound") render(); });
+loadData(); setInterval(loadData,60000);
+</script>
+</body>
+</html>
