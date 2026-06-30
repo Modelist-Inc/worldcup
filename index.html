@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Fantasy World Cup Dashboard</title>
+  <style>
+    :root{
+      --bg:#05071a; --panel:rgba(6,13,38,.84); --panel2:rgba(11,24,58,.72);
+      --text:#f8fbff; --muted:#a9b8ff; --line:rgba(45,221,255,.28);
+      --cyan:#22f4ff; --cyan2:#009dff; --pink:#ff3df2; --pink2:#b620ff;
+      --green:#56ff4f; --red:#ff304f; --yellow:#ffe845; --purple:#a855f7;
+      --shadow:0 0 24px rgba(34,244,255,.16),0 0 60px rgba(255,61,242,.10);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;color:var(--text);
+      font-family:Orbitron,Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:
+        radial-gradient(circle at 15% 0%,rgba(255,61,242,.25) 0,transparent 26%),
+        radial-gradient(circle at 80% 8%,rgba(34,244,255,.25) 0,transparent 28%),
+        linear-gradient(180deg,#05071a 0,#07021a 48%,#020817 100%);
+      min-height:100vh;
+      overflow-x:hidden;
+    }
+    body:before{
+      content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;
+      background-image:
+        linear-gradient(rgba(34,244,255,.08) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(34,244,255,.08) 1px,transparent 1px),
+        radial-gradient(circle at 30% 25%,rgba(255,255,255,.35) 0 1px,transparent 1px),
+        radial-gradient(circle at 70% 45%,rgba(255,255,255,.25) 0 1px,transparent 1px);
+      background-size:58px 58px,58px 58px,180px 180px,240px 240px;
+      mask-image:linear-gradient(180deg,rgba(0,0,0,.9),rgba(0,0,0,.15));
+    }
+    body:after{
+      content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;
+      background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 4px);
+      mix-blend-mode:overlay;opacity:.45;
+    }
+    .shell{max-width:1420px;margin:0 auto;padding:18px}
+    header{
+      display:grid;grid-template-columns:1.5fr .9fr;gap:18px;margin-bottom:12px;align-items:stretch;
+      position:relative;
+    }
+    .brand{
+      min-height:150px;display:flex;align-items:center;gap:18px;padding:22px 26px;
+      border:1px solid rgba(255,61,242,.65);border-radius:24px;background:
+        linear-gradient(135deg,rgba(255,61,242,.12),rgba(34,244,255,.08)),
+        rgba(6,13,38,.66);
+      box-shadow:0 0 0 1px rgba(34,244,255,.25) inset,var(--shadow);
+      clip-path:polygon(0 0,96% 0,100% 22%,100% 100%,4% 100%,0 78%);
+    }
+    .logo{
+      width:92px;height:92px;border-radius:28px;background:
+        radial-gradient(circle at 30% 30%,#fff 0 5%,var(--cyan) 6% 30%,var(--pink) 58%,#16113d 100%);
+      display:grid;place-items:center;color:white;font-size:42px;font-weight:900;
+      box-shadow:0 0 30px rgba(34,244,255,.8),0 0 54px rgba(255,61,242,.35);
+      border:1px solid rgba(255,255,255,.5);
+    }
+    h1{
+      font-size:52px;line-height:.92;margin:0;letter-spacing:-.07em;text-transform:uppercase;
+      background:linear-gradient(180deg,#fff 0,#ff6df7 38%,#16e9ff 80%);
+      -webkit-background-clip:text;background-clip:text;color:transparent;
+      text-shadow:0 0 18px rgba(255,61,242,.62);
+      font-style:italic;
+    }
+    .subtitle{
+      display:inline-block;margin-top:12px;color:#fff;font-size:16px;letter-spacing:.15em;text-transform:uppercase;
+      text-shadow:0 0 12px var(--pink);color:#ff8df9;font-weight:900;
+    }
+    .actions{
+      min-height:150px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:12px;
+      border:1px solid rgba(34,244,255,.65);border-radius:24px;background:rgba(6,13,38,.66);
+      box-shadow:0 0 0 1px rgba(255,61,242,.2) inset,var(--shadow);
+      clip-path:polygon(6% 0,100% 0,100% 78%,94% 100%,0 100%,0 22%);
+    }
+    .status{font-size:12px;color:var(--cyan);text-transform:uppercase;letter-spacing:.08em;text-shadow:0 0 10px var(--cyan)}
+    button{
+      border:1px solid rgba(34,244,255,.5);background:linear-gradient(180deg,rgba(10,22,58,.92),rgba(7,10,38,.92));
+      border-radius:10px;padding:10px 14px;font-weight:850;color:var(--text);cursor:pointer;
+      box-shadow:0 0 16px rgba(34,244,255,.18),0 0 0 1px rgba(255,255,255,.06) inset;
+      text-transform:uppercase;letter-spacing:.04em;
+    }
+    button:hover{border-color:var(--pink);box-shadow:0 0 18px rgba(255,61,242,.55),0 0 30px rgba(34,244,255,.25);color:#fff}
+    button.primary{
+      background:linear-gradient(135deg,#ff1fe9,#176dff 56%,#00f7ff);
+      color:#fff;border-color:rgba(255,255,255,.45);box-shadow:0 0 24px rgba(255,61,242,.6);
+    }
+    button.danger{background:linear-gradient(135deg,#ff244e,#7f1dff);color:#fff;border-color:rgba(255,61,242,.9)}
+    .tabs{
+      display:flex;gap:0;overflow:auto;margin-bottom:16px;padding:0;
+      border-bottom:1px solid rgba(34,244,255,.35);
+    }
+    .tab{
+      white-space:nowrap;border:1px solid rgba(34,244,255,.32);border-bottom:0;background:rgba(4,9,29,.78);
+      border-radius:0;padding:13px 20px;color:#d8e4ff;font-weight:900;cursor:pointer;
+      clip-path:polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%);
+      margin-right:-4px;
+    }
+    .tab.active{
+      background:linear-gradient(135deg,rgba(255,61,242,.95),rgba(135,30,255,.85));
+      color:#fff;border-color:rgba(255,255,255,.75);box-shadow:0 0 22px rgba(255,61,242,.75);
+    }
+    .grid{display:grid;grid-template-columns:2fr .85fr;gap:16px}.grid2{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}.full{grid-column:1/-1}
+    .card{
+      position:relative;background:var(--panel);backdrop-filter:blur(10px);border:1px solid var(--line);
+      border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px;
+      clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,18px 100%,0 calc(100% - 18px));
+    }
+    .card:before{
+      content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+      background:linear-gradient(90deg,transparent,rgba(34,244,255,.13),transparent);
+      opacity:.65;
+    }
+    .cardHead{
+      position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;
+      padding:17px 18px 0;border-top:1px solid rgba(255,61,242,.3);
+    }
+    .cardTitle{
+      font-size:20px;font-weight:950;letter-spacing:.04em;text-transform:uppercase;color:#ff65f6;
+      text-shadow:0 0 14px rgba(255,61,242,.9);
+    }
+    .cardBody{position:relative;padding:16px 18px 18px}
+    .help{color:var(--muted);font-size:12px;line-height:1.45}
+    table{width:100%;border-collapse:separate;border-spacing:0;font-size:14px}
+    th,td{padding:12px 10px;border-bottom:1px solid rgba(34,244,255,.18);text-align:left;vertical-align:middle}
+    th{
+      font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--cyan);font-weight:950;
+      text-shadow:0 0 8px rgba(34,244,255,.6);
+    }
+    th.sortable{cursor:pointer} th.sortable:hover{color:var(--pink)}
+    td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+    tr:last-child td{border-bottom:0}
+    tbody tr:hover{background:rgba(34,244,255,.07)}
+    .rank{font-weight:950}.medal{font-size:18px}
+    .metricRow{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
+    .metric{
+      padding:15px;border:1px solid rgba(34,244,255,.32);border-radius:16px;background:rgba(0,14,42,.65);
+      box-shadow:0 0 18px rgba(34,244,255,.08) inset;
+    }
+    .metricLabel{font-size:10px;color:var(--cyan);text-transform:uppercase;letter-spacing:.09em;font-weight:950}
+    .metricVal{font-size:31px;font-weight:950;margin-top:3px;color:var(--yellow);text-shadow:0 0 12px rgba(255,232,69,.75)}
+    .pts{color:var(--yellow);font-weight:950;text-shadow:0 0 10px rgba(255,232,69,.6)}
+    .proj{color:var(--green);font-weight:950;text-shadow:0 0 10px rgba(86,255,79,.45)}
+    .games{color:var(--cyan);font-weight:950;text-shadow:0 0 10px rgba(34,244,255,.55)}
+    .goals{color:var(--pink);font-weight:950;text-shadow:0 0 10px rgba(255,61,242,.55)}
+    .pill{
+      display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:6px;
+      background:rgba(34,244,255,.09);color:#ecfeff;font-size:12px;font-weight:850;margin:2px;
+      border:1px solid rgba(34,244,255,.26);
+    }
+    .flagImg{width:24px;height:24px;border-radius:5px;object-fit:cover;border:1px solid rgba(255,255,255,.55);background:#fff;vertical-align:middle}
+    .view.hidden{display:none}
+    .notice{padding:12px 14px;border-radius:12px;margin-bottom:14px;font-size:13px}
+    .notice.ok{background:rgba(6,95,70,.28);color:#bfffe3;border:1px solid rgba(86,255,79,.35)}
+    .notice.err{background:rgba(159,18,57,.25);color:#ffd3df;border:1px solid rgba(255,48,79,.55)}
+    .match{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid rgba(34,244,255,.18)}
+    .match:last-child{border-bottom:0}.matchTeams{font-weight:950}.matchMeta{font-size:12px;color:var(--muted);margin-top:3px}.matchImpact{font-size:12px;font-weight:950;text-align:right}
+    .teamCell{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .statusBadge{display:inline-flex;align-items:center;border-radius:6px;padding:4px 8px;font-size:10px;font-weight:950;text-transform:uppercase;letter-spacing:.04em}
+    .statusBadge.active{background:rgba(86,255,79,.16);color:#9cff8f;border:1px solid rgba(86,255,79,.42)}
+    .statusBadge.eliminated{background:rgba(255,48,79,.16);color:#ff9aaa;border:1px solid rgba(255,48,79,.42)}
+    .statusBadge.unknown{background:rgba(169,184,255,.12);color:#cfd8ff;border:1px solid rgba(169,184,255,.35)}
+    .activeRow{background:linear-gradient(90deg,rgba(86,255,79,.08),transparent)}
+    .eliminatedRow{opacity:.48}
+    .ownerStack{display:flex;gap:6px;flex-wrap:wrap}
+    .ownerChip{display:inline-flex;align-items:center;border-radius:6px;background:rgba(255,61,242,.13);color:#ffd8fb;font-size:12px;font-weight:900;padding:5px 8px;border:1px solid rgba(255,61,242,.35)}
+    .bracketWrap{overflow:auto;padding-bottom:8px}
+    .bracket{display:grid;grid-template-columns:repeat(5,230px);gap:18px;min-width:1190px}
+    .roundTitle{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--cyan);font-weight:950;margin:0 0 10px;text-shadow:0 0 10px var(--cyan)}
+    .game{border:1px solid rgba(34,244,255,.34);border-radius:14px;background:rgba(2,8,28,.82);margin-bottom:14px;overflow:hidden;box-shadow:0 0 16px rgba(34,244,255,.08)}
+    .gameLabel{padding:8px 10px;background:rgba(255,61,242,.11);border-bottom:1px solid rgba(34,244,255,.22);font-size:10px;text-transform:uppercase;color:var(--pink);font-weight:950;letter-spacing:.08em}
+    .pickTeam{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;border:0;box-shadow:none;border-radius:0;background:transparent;padding:10px 12px;text-align:left;color:#f8fbff}
+    .pickTeam + .pickTeam{border-top:1px solid rgba(34,244,255,.18)}
+    .pickTeam:hover{background:rgba(34,244,255,.12)}
+    .pickTeam.selected{background:linear-gradient(90deg,rgba(86,255,79,.2),rgba(34,244,255,.13));color:#fff;box-shadow:0 0 18px rgba(86,255,79,.25) inset}
+    .pickLeft{display:flex;align-items:center;gap:8px;min-width:0}.pickName{font-weight:950;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.seed{font-size:10px;color:var(--cyan)}
+    .emptySlot{padding:12px;color:#6374bd;font-size:13px}
+    .scenarioControls{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin:12px 0 16px}
+    .field{display:flex;flex-direction:column;gap:5px}.field label{font-size:10px;color:var(--cyan);font-weight:950;text-transform:uppercase;letter-spacing:.08em}
+    .field input,.field select,select{
+      width:92px;border:1px solid rgba(34,244,255,.45);border-radius:9px;padding:9px;background:#07122f;color:#fff;font-weight:900;
+      box-shadow:0 0 12px rgba(34,244,255,.10) inset;
+    }
+    .championBox{
+      border:1px solid rgba(255,61,242,.58);background:linear-gradient(135deg,rgba(255,61,242,.18),rgba(34,244,255,.10));
+      border-radius:18px;padding:16px;margin-bottom:14px;box-shadow:0 0 30px rgba(255,61,242,.18)
+    }
+    .championBox .big{font-size:26px;font-weight:950;letter-spacing:-.03em;color:#fff;text-shadow:0 0 15px var(--pink)}
+    @media(max-width:900px){
+      .shell{padding:12px}header{display:block}.brand,.actions{clip-path:none;min-height:auto;margin-bottom:12px}.logo{width:58px;height:58px;font-size:28px}h1{font-size:33px}
+      .grid,.grid2{display:block}.card{margin-bottom:14px;clip-path:none}th,td{padding:10px 6px;font-size:12px}.hideMobile{display:none}.metricRow{grid-template-columns:1fr}.bracket{grid-template-columns:repeat(5,210px);min-width:1090px}
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <div class="brand">
+      <div class="logo">⚽</div>
+      <div><h1>Fantasy World Cup 2026</h1><div class="subtitle">Pick. Play. Win. Engage Hyperdrive.</div></div>
+    </div>
+    <div class="actions"><div class="status" id="lastUpdated">Loading...</div><button class="primary" onclick="loadData()">Refresh Data</button></div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="leaderboard">Leaderboard</button>
+    <button class="tab" data-tab="knockout">Knockout What‑If</button>
+    <button class="tab" data-tab="matches">Matches</button>
+    <button class="tab" data-tab="players">Tiebreakers</button>
+    <button class="tab" data-tab="teamOwnership">Teams</button>
+    <button class="tab" data-tab="teams">Team Detail</button>
+  </div>
+
+  <section id="leaderboard" class="view">
+    <div id="statusBox"></div>
+    <div class="grid">
+      <div class="card">
+        <div class="cardHead"><div class="cardTitle">Live Standings</div><div class="help">Click any column to sort</div></div>
+        <div class="cardBody"><table id="leaderboardTable"></table></div>
+      </div>
+      <aside>
+        <div class="card">
+          <div class="cardHead"><div class="cardTitle">Tournament Snapshot</div></div>
+          <div class="cardBody">
+            <div class="metricRow" style="grid-template-columns:1fr">
+              <div class="metric"><div class="metricLabel">Games Remaining</div><div class="metricVal games" id="totalRemaining">0</div></div>
+              <div class="metric"><div class="metricLabel">Matches Loaded</div><div class="metricVal" id="totalMatches">0</div></div>
+              <div class="metric"><div class="metricLabel">Live Matches</div><div class="metricVal pts" id="liveMatches">0</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="cardHead"><div class="cardTitle">Top Tiebreakers</div></div>
+          <div class="cardBody"><table id="miniPlayerTable"></table></div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section id="knockout" class="view hidden">
+    <div class="card">
+      <div class="cardHead"><div><div class="cardTitle">Knockout What‑If Builder</div><div class="help">Click a team to advance it. Winners auto-populate into the next round and the what-if leaderboard updates instantly.</div></div><button class="danger" onclick="resetScenario()">Reset Bracket</button></div>
+      <div class="cardBody">
+        <div class="scenarioControls">
+          <div class="field"><label>Current Round</label>
+            <select id="currentRound" style="width:135px;border:1px solid var(--line);border-radius:10px;padding:9px;background:#fff;font-weight:800">
+              <option value="r32" selected>Round of 32</option>
+              <option value="r16">Round of 16</option>
+              <option value="qf">Quarterfinals</option>
+              <option value="sf">Semifinals</option>
+              <option value="f">Final</option>
+            </select>
+          </div>
+          <div class="field"><label>R32/R16 Win</label><input id="ptsR16" type="number" value="3"></div>
+          <div class="field"><label>Quarter Win</label><input id="ptsQF" type="number" value="3"></div>
+          <div class="field"><label>Semi Win</label><input id="ptsSF" type="number" value="3"></div>
+          <div class="field"><label>Final Win</label><input id="ptsF" type="number" value="3"></div>
+          <div class="field"><label>Champion Bonus</label><input id="ptsChamp" type="number" value="0"></div>
+        </div>
+        <div class="grid2">
+          <div>
+            <div class="championBox"><div class="help">Projected Champion</div><div class="big" id="championName">No champion selected</div></div>
+            <div class="bracketWrap"><div class="bracket" id="bracket"></div></div>
+          </div>
+          <div>
+            <div class="card" style="box-shadow:none;margin:0"><div class="cardHead"><div class="cardTitle">What‑If Leaderboard</div></div><div class="cardBody"><table id="scenarioTable"></table></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="matches" class="view hidden"><div class="card"><div class="cardHead"><div class="cardTitle">Match Tracker</div></div><div class="cardBody" id="matchList"></div></div></section>
+  <section id="players" class="view hidden"><div class="card"><div class="cardHead"><div class="cardTitle">Tiebreaker Goal Tracker</div></div><div class="cardBody"><table id="playerTable"></table></div></div></section>
+  <section id="teamOwnership" class="view hidden">
+    <div class="card">
+      <div class="cardHead"><div><div class="cardTitle">Teams / Ownership</div><div class="help">Every country in the league, who owns it, current points, projected points, and potential games left based on the selected current knockout round.</div></div></div>
+      <div class="cardBody"><table id="teamOwnershipTable"></table></div>
+    </div>
+  </section>
+  <section id="teams" class="view hidden"><div id="teamCards"></div></section>
+</div>
+
+<script>
+const DATE_RANGE = "20260611-20260719";
+const ESPN_URL = `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?limit=1000&dates=${DATE_RANGE}`;
+const rosters = [
+  {owner:"Birk", name:"Team 1", player:"Kane", teams:["England","Germany"]},
+  {owner:"Birk", name:"Team 2", player:"Vini Jr", teams:["Brazil","Netherlands","Uzbekistan"]},
+  {owner:"Wenz", name:"", player:"Mbappe", teams:["France","Japan","Egypt"]},
+  {owner:"Parkin", name:"Team 1", player:"Mbappe", teams:["France","Germany"]},
+  {owner:"Parkin", name:"Team 2", player:"Messi", teams:["Argentina","Mexico","Paraguay"]},
+  {owner:"Newsy", name:"Team 1", player:"Mbappe", teams:["France","Netherlands","Uzbekistan"]},
+  {owner:"Newsy", name:"Team 2", player:"Ronaldo", teams:["Portugal","Morocco","Ecuador"]},
+  {owner:"Mallen", name:"Team 1", player:"Lukaku", teams:["Belgium","South Korea","Algeria","Saudi Arabia","Uzbekistan","Haiti","Curacao"]},
+  {owner:"Mallen", name:"Team 2", player:"Pulisic", teams:["USA","Canada","Austria","Bosnia","Panama"]},
+  {owner:"Schwert", name:"", player:"Mbappe", teams:["Spain","Netherlands","Iraq"]},
+  {owner:"Ball", name:"", player:"Mbappe", teams:["Mexico","USA","Morocco","Bosnia"]},
+  {owner:"KC", name:"Team 1", player:"Kane", teams:["England","Germany"]},
+  {owner:"KC", name:"Team 2", player:"Mbappe", teams:["France","Morocco","Senegal"]},
+  {owner:"Myers", name:"Team 1", player:"Ronaldo", teams:["Portugal","Japan","Morocco"]},
+  {owner:"Myers", name:"Team 2", player:"Martinez", teams:["Argentina","Japan","South Korea","Haiti"]},
+  {owner:"Steggy", name:"Team 1", player:"Kane", teams:["USA","Senegal","South Korea","Colombia"]},
+  {owner:"Steggy", name:"Team 2", player:"Mbappe", teams:["France","Morocco","South Korea"]},
+  {owner:"Q", name:"", player:"Haaland", teams:["Mexico","Turkey","Germany"]}
+];
+const teamAliases = {"United States":"USA","USA":"USA","Korea Republic":"South Korea","Republic of Korea":"South Korea","Türkiye":"Turkey","Turkiye":"Turkey","Curaçao":"Curacao","Curacau":"Curacao","Columbia":"Colombia","Bosnia and Herzegovina":"Bosnia","Bosnia-Herzegovina":"Bosnia","Uzbekestan":"Uzbekistan"};
+const playerAliases = {"Mbappe":["Mbappe","Mbappé","Kylian Mbappe","Kylian Mbappé"],"Kane":["Kane","Harry Kane"],"Messi":["Messi","Lionel Messi"],"Ronaldo":["Ronaldo","Cristiano Ronaldo"],"Pulisic":["Pulisic","Christian Pulisic"],"Lukaku":["Lukaku","Romelu Lukaku"],"Haaland":["Haaland","Erling Haaland","Erling Braut Haaland"],"Martinez":["Martinez","Martínez","Lautaro Martinez","Lautaro Martínez"],"Vini Jr":["Vini Jr","Vinicius","Vinícius","Vinicius Junior","Vinícius Júnior","Vini"]};
+const eloRatings = {"Argentina":2144,"Spain":2134,"France":2084,"England":2055,"Colombia":1998,"Brazil":1990,"Portugal":1975,"Netherlands":1965,"Germany":1945,"Belgium":1905,"Mexico":1845,"USA":1835,"Morocco":1815,"Japan":1805,"Austria":1790,"Senegal":1785,"Ecuador":1775,"Turkey":1765,"South Korea":1750,"Canada":1735,"Paraguay":1725,"Algeria":1700,"Egypt":1695,"Bosnia":1665,"Saudi Arabia":1625,"Panama":1590,"Uzbekistan":1585,"Iraq":1575,"Haiti":1510,"Curacao":1495};
+
+let app = {matches:[], teamStats:{}, playerGoals:{}, standings:[], teamLogos:{}};
+let sortState = {key:"projectedFinal", dir:"desc"};
+let scenario = JSON.parse(localStorage.getItem("wcKnockoutScenario") || "{}");
+
+function normTeam(t){ const clean=String(t||"").trim(); return teamAliases[clean] || clean; }
+function normPlayer(p){ return String(p||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase(); }
+function rosterLabel(r){ return `${r.owner}${r.name ? " " + r.name : ""}`; }
+function logo(team){ const src=app.teamLogos[normTeam(team)]; return src ? `<img class="flagImg" src="${src}" alt="">` : `<span class="flagImg"></span>`; }
+function emptyTeamStat(){ return {played:0,w:0,d:0,l:0,points:0,gf:0,ga:0,remaining:0,projectedRemaining:0,matches:[]}; }
+function eloProjection(homeTeam, awayTeam){ const h=eloRatings[homeTeam]??1500,a=eloRatings[awayTeam]??1500,d=h-a; const hnd=1/(1+Math.pow(10,-d/400)); const dp=Math.max(.12,Math.min(.30,.28-Math.abs(d)/2500)); const hp=hnd*(1-dp), ap=(1-hnd)*(1-dp); return {homeExp:3*hp+dp, awayExp:3*ap+dp}; }
+function eventStatus(event){ const st=event.status?.type||{}; return {completed:!!st.completed,inProgress:["STATUS_IN_PROGRESS","STATUS_HALFTIME","STATUS_END_PERIOD"].includes(st.name)||st.state==="in",scheduled:st.state==="pre"||st.name==="STATUS_SCHEDULED",text:st.shortDetail||st.description||""}; }
+function scoreEventScorers(event){ const names=[]; for(const comp of event.competitions||[]){ for(const d of comp.details||[]){ const type=(d.type?.text||d.type||"").toLowerCase(); if(type.includes("goal")||type.includes("penalty - scored")){ for(const a of (d.athletesInvolved||d.athletes||[])){ const n=a.displayName||a.shortName||a.fullName; if(n) names.push(n); } if(d.athlete?.displayName) names.push(d.athlete.displayName); } } } return names; }
+function processEvents(events){
+  const teamStats={}, playerGoals={}, logos={}; Object.keys(playerAliases).forEach(p=>playerGoals[p]=0); const matches=[];
+  for(const event of events){
+    const comp=event.competitions?.[0]; if(!comp||!comp.competitors||comp.competitors.length<2) continue;
+    const home=comp.competitors.find(c=>c.homeAway==="home")||comp.competitors[0], away=comp.competitors.find(c=>c.homeAway==="away")||comp.competitors[1];
+    const homeTeam=normTeam(home.team?.displayName||home.team?.shortDisplayName||home.team?.name), awayTeam=normTeam(away.team?.displayName||away.team?.shortDisplayName||away.team?.name);
+    [home,away].forEach(c=>{ const nm=normTeam(c.team?.displayName||c.team?.shortDisplayName||c.team?.name); const lg=c.team?.logo || c.team?.logos?.[0]?.href; if(lg) logos[nm]=lg; });
+    const hs=Number(home.score||0), as=Number(away.score||0), st=eventStatus(event); [homeTeam,awayTeam].forEach(t=>{if(!teamStats[t]) teamStats[t]=emptyTeamStat()});
+    const proj=eloProjection(homeTeam,awayTeam); const row={date:event.date,name:event.name,homeTeam,awayTeam,hs,as,status:st,display:event.shortName||event.name,homeExp:proj.homeExp,awayExp:proj.awayExp};
+    if(st.completed||st.inProgress){
+      teamStats[homeTeam].played++; teamStats[awayTeam].played++; teamStats[homeTeam].gf+=hs; teamStats[homeTeam].ga+=as; teamStats[awayTeam].gf+=as; teamStats[awayTeam].ga+=hs;
+      let hp=0,ap=0; if(hs>as){hp=3;teamStats[homeTeam].w++;teamStats[awayTeam].l++} else if(as>hs){ap=3;teamStats[awayTeam].w++;teamStats[homeTeam].l++} else{hp=1;ap=1;teamStats[homeTeam].d++;teamStats[awayTeam].d++}
+      teamStats[homeTeam].points+=hp; teamStats[awayTeam].points+=ap; row.homePts=hp; row.awayPts=ap;
+      for(const scorer of scoreEventScorers(event)){ const s=normPlayer(scorer); for(const [key,aliases] of Object.entries(playerAliases)){ if(aliases.some(a=>s.includes(normPlayer(a)))) playerGoals[key]++; } }
+    } else { teamStats[homeTeam].remaining++; teamStats[awayTeam].remaining++; teamStats[homeTeam].projectedRemaining+=proj.homeExp; teamStats[awayTeam].projectedRemaining+=proj.awayExp; }
+    teamStats[homeTeam].matches.push(row); teamStats[awayTeam].matches.push(row); matches.push(row);
+  }
+  return {teamStats,playerGoals,matches,teamLogos:logos};
+}
+
+function allCountries(){
+  return [...new Set(rosters.flatMap(r=>r.teams.map(normTeam)))].filter(Boolean).sort();
+}
+function ownersByCountry(){
+  const map={};
+  for(const r of rosters){
+    for(const t of r.teams.map(normTeam)){
+      if(!map[t]) map[t]=[];
+      map[t].push(rosterLabel(r));
+    }
+  }
+  return map;
+}
+function completedRecord(country){
+  const s=app.teamStats[normTeam(country)]||emptyTeamStat();
+  return {points:s.points, played:s.played, remainingScheduled:s.remaining};
+}
+function isEliminated(country){
+  const c=normTeam(country);
+  // A team is treated as eliminated if it has no future scheduled match in ESPN data.
+  // Before knockout qualification is fully known, this is a practical live-dashboard approximation.
+  const hasFuture=app.matches.some(m=>!m.status.completed && !m.status.inProgress && (m.homeTeam===c || m.awayTeam===c));
+  const hasLive=app.matches.some(m=>m.status.inProgress && (m.homeTeam===c || m.awayTeam===c));
+  return !hasFuture && !hasLive && app.matches.length>0;
+}
+function getCurrentRound(){
+  return document.getElementById("currentRound")?.value || "r32";
+}
+function maxPotentialFromRound(round){
+  return ({r32:5,r16:4,qf:3,sf:2,f:1})[round] || 5;
+}
+function potentialGamesLeftForCountry(country){
+  const c=normTeam(country);
+  const currentRound=getCurrentRound();
+
+  // If eliminated, potential games left is zero.
+  const hasFutureScheduled=app.matches.some(m=>!m.status.completed && !m.status.inProgress && (m.homeTeam===c || m.awayTeam===c));
+  const hasLive=app.matches.some(m=>m.status.inProgress && (m.homeTeam===c || m.awayTeam===c));
+
+  // If the user has advanced this team in the what-if bracket, use its deepest selected round.
+  // Example: selected as quarterfinal winner means it could still play semi + final = 2 more from there,
+  // but for "potential games left" before that quarter is played, quarters = 3.
+  const roundPotential={r32:5,r16:4,qf:3,sf:2,f:1};
+  let bestScenarioPotential=0;
+  for(const [id,winner] of Object.entries(scenario)){
+    if(winner===c){
+      const round=id.split("_")[0];
+      bestScenarioPotential=Math.max(bestScenarioPotential, roundPotential[round]||0);
+    }
+  }
+
+  if(bestScenarioPotential>0) return bestScenarioPotential;
+
+  // Main live logic:
+  // Before the full bracket is known, teams still alive should get the maximum possible games left
+  // from the selected current round, not just the games ESPN has already scheduled.
+  // Round of 32 = 5, Round of 16 = 4, Quarters = 3, Semis = 2, Final = 1.
+  if(hasFutureScheduled || hasLive) return maxPotentialFromRound(currentRound);
+
+  return 0;
+}
+function countryStatus(country){
+  const c=normTeam(country);
+  const potential=potentialGamesLeftForCountry(c);
+  if(potential>0) return {key:"active", label:"Still alive"};
+  return {key:"eliminated", label:"No games left"};
+}
+function buildStandings(){
+  const rows=rosters.map((r,i)=>{ let points=0,rem=0,projRem=0,potentialRem=0,details=[]; for(const t of r.teams){ const nt=normTeam(t); const s=app.teamStats[nt]||emptyTeamStat(); const potentialLeft=potentialGamesLeftForCountry(nt); const status=countryStatus(nt); points+=s.points; rem+=s.remaining; potentialRem+=potentialLeft; projRem+=s.projectedRemaining; details.push({team:nt,potentialLeft,status,...s}); } const goals=app.playerGoals[r.player]??0; return {...r,id:i,label:rosterLabel(r),current:points,playerGoals:goals,gamesRemaining:potentialRem,scheduledGamesRemaining:rem,projectedRemaining:projRem,projectedFinal:points+projRem,details}; });
+  const key=sortState.key, dir=sortState.dir==="asc"?1:-1; rows.sort((a,b)=>{ const av=a[key], bv=b[key]; if(typeof av==="string") return dir*String(av).localeCompare(String(bv)); return dir*((av??0)-(bv??0)) || (b.current-a.current) || (b.playerGoals-a.playerGoals); }); app.standings=rows;
+}
+function sortBy(key){ if(sortState.key===key) sortState.dir=sortState.dir==="asc"?"desc":"asc"; else{sortState.key=key;sortState.dir=["label","player"].includes(key)?"asc":"desc";} render(); }
+function th(label,key,cls=""){ const mark=sortState.key===key ? (sortState.dir==="asc"?" ▲":" ▼") : ""; return `<th class="sortable ${cls}" onclick="sortBy('${key}')">${label}${mark}</th>`; }
+function renderLeaderboard(){ buildStandings(); document.getElementById("leaderboardTable").innerHTML=`<thead><tr><th>Rank</th>${th("Owner","label")}<th class="hideMobile">Countries</th>${th("Current","current","num")}${th("Projected","projectedFinal","num")}${th("Potential Games Left","gamesRemaining","num")}${th("Player","player")}${th("Goals","playerGoals","num")}</tr></thead><tbody>${app.standings.map((r,i)=>`<tr><td class="rank"><span class="medal">${i===0?"🥇":i===1?"🥈":i===2?"🥉":i+1}</span></td><td><b>${r.label}</b></td><td class="hideMobile">${r.teams.map(t=>`<span class="pill">${logo(t)}${normTeam(t)}</span>`).join("")}</td><td class="num pts">${r.current}</td><td class="num proj">${r.projectedFinal.toFixed(1)}</td><td class="num games">${r.gamesRemaining}</td><td>${r.player}</td><td class="num goals">${r.playerGoals}</td></tr>`).join("")}</tbody>`; }
+function renderPlayers(){ const rows=Object.keys(playerAliases).map(p=>({player:p,goals:app.playerGoals[p]||0})).sort((a,b)=>b.goals-a.goals); document.getElementById("miniPlayerTable").innerHTML=`<tbody>${rows.slice(0,8).map((r,i)=>`<tr><td>${i+1}</td><td><b>${r.player}</b></td><td class="num goals">${r.goals}</td></tr>`).join("")}</tbody>`; document.getElementById("playerTable").innerHTML=`<thead><tr><th>Player</th><th class="num">Goals</th><th>Used By</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${r.player}</b></td><td class="num goals">${r.goals}</td><td>${rosters.filter(x=>x.player===r.player).map(x=>`<span class="pill">${rosterLabel(x)}</span>`).join("")}</td></tr>`).join("")}</tbody>`; }
+function renderTeams(){ document.getElementById("teamCards").innerHTML=app.standings.map(r=>`<div class="card"><div class="cardHead"><div><div class="cardTitle">${r.label}</div><div class="help">${r.player}: ${r.playerGoals} goals • Potential games left: ${r.gamesRemaining}</div></div></div><div class="cardBody"><table><thead><tr><th>Country</th><th>Status</th><th class="num">Pts</th><th class="num">Potential Left</th><th class="num">Exp Left</th><th class="num">Proj</th></tr></thead><tbody>${r.details.map(d=>`<tr class="${d.status.key==='active'?'activeRow':d.status.key==='eliminated'?'eliminatedRow':''}"><td><div class="teamCell">${logo(d.team)}<b>${d.team}</b><span class="help">${d.w}-${d.d}-${d.l}, GF ${d.gf}, GA ${d.ga}</span></div></td><td><span class="statusBadge ${d.status.key}">${d.status.label}</span></td><td class="num pts">${d.points}</td><td class="num games">${d.potentialLeft}</td><td class="num proj">${d.projectedRemaining.toFixed(1)}</td><td class="num proj">${(d.points+d.projectedRemaining).toFixed(1)}</td></tr>`).join("")}</tbody></table></div></div>`).join(""); }
+
+function renderTeamOwnership(){
+  const owners=ownersByCountry();
+  const countries=allCountries();
+  const rows=countries.map(c=>{
+    const s=app.teamStats[c]||emptyTeamStat();
+    const potential=potentialGamesLeftForCountry(c);
+    const status=countryStatus(c);
+    return {country:c, owners:owners[c]||[], points:s.points, projected:(s.points+s.projectedRemaining), potential, status, record:`${s.w}-${s.d}-${s.l}`};
+  }).sort((a,b)=>b.points-a.points || b.potential-a.potential || a.country.localeCompare(b.country));
+  document.getElementById("teamOwnershipTable").innerHTML=`<thead><tr><th>Country</th><th>Status</th><th>Owners</th><th class="num">Pts</th><th class="num">Potential Left</th><th class="num">Projected</th></tr></thead><tbody>${rows.map(r=>`<tr class="${r.status.key==='active'?'activeRow':r.status.key==='eliminated'?'eliminatedRow':''}"><td><div class="teamCell">${logo(r.country)}<b>${r.country}</b><span class="help">${r.record}</span></div></td><td><span class="statusBadge ${r.status.key}">${r.status.label}</span></td><td><div class="ownerStack">${r.owners.map(o=>`<span class="ownerChip">${o}</span>`).join("")}</div></td><td class="num pts">${r.points}</td><td class="num games">${r.potential}</td><td class="num proj">${r.projected.toFixed(1)}</td></tr>`).join("")}</tbody>`;
+}
+
+function matchLine(m){ const dt=new Date(m.date), isDone=m.status.completed||m.status.inProgress; return `<div class="match"><div><div class="matchTeams">${logo(m.homeTeam)} ${m.homeTeam} ${isDone?m.hs:""} - ${isDone?m.as:""} ${logo(m.awayTeam)} ${m.awayTeam}</div><div class="matchMeta">${dt.toLocaleString([], {month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})} • ${m.status.text||"Scheduled"}</div></div><div class="matchImpact ${isDone?'pts':'proj'}">${isDone?`${m.homeTeam} +${m.homePts}, ${m.awayTeam} +${m.awayPts}`:`Exp ${m.homeExp.toFixed(1)} / ${m.awayExp.toFixed(1)}`}</div></div>`; }
+function renderMatches(){ const sorted=[...app.matches].sort((a,b)=>new Date(a.date)-new Date(b.date)); document.getElementById("matchList").innerHTML=sorted.map(matchLine).join(""); }
+function renderStats(){ const rem=app.matches.filter(m=>!m.status.completed&&!m.status.inProgress).length; document.getElementById("totalRemaining").textContent=rem; document.getElementById("totalMatches").textContent=app.matches.length; document.getElementById("liveMatches").textContent=app.matches.filter(m=>m.status.inProgress).length; }
+function getInitialKnockoutTeams(){ const future=app.matches.filter(m=>!m.status.completed).flatMap(m=>[m.homeTeam,m.awayTeam]); const owned=rosters.flatMap(r=>r.teams.map(normTeam)); const pool=[...new Set([...future,...owned])].filter(Boolean); return pool.sort((a,b)=>(eloRatings[b]??1500)-(eloRatings[a]??1500)).slice(0,32); }
+function saveScenario(){ localStorage.setItem("wcKnockoutScenario", JSON.stringify(scenario)); }
+function setWinner(round, game, team){ const id=`${round}_${game}`; if(scenario[id]===team) delete scenario[id]; else scenario[id]=team; clearDownstream(round); saveScenario(); render(); }
+function clearDownstream(round){ const order=["r32","r16","qf","sf","f"], idx=order.indexOf(round); order.slice(idx+1).forEach(r=>Object.keys(scenario).filter(k=>k.startsWith(r+"_")).forEach(k=>delete scenario[k])); }
+function roundTeams(round){ if(round==="r32") return getInitialKnockoutTeams(); const prev={r16:"r32",qf:"r16",sf:"qf",f:"sf"}[round], count={r16:16,qf:8,sf:4,f:2}[round]; return Array.from({length:count},(_,i)=>scenario[`${prev}_${i}`]).filter(Boolean); }
+function teamButton(round,i,t,selected){ const safe=String(t).replace(/'/g,"\\'"); return `<button class="pickTeam ${selected===t?'selected':''}" onclick="setWinner('${round}',${i},'${safe}')"><span class="pickLeft">${logo(t)}<span class="pickName">${t}</span></span><span class="seed">${eloRatings[t]||1500}</span></button>`; }
+function renderGame(round,i,teams){ const t1=teams[i*2], t2=teams[i*2+1], selected=scenario[`${round}_${i}`]; return `<div class="game"><div class="gameLabel">Game ${i+1}</div>${t1?teamButton(round,i,t1,selected):`<div class="emptySlot">Waiting for previous pick</div>`}${t2?teamButton(round,i,t2,selected):`<div class="emptySlot">Waiting for previous pick</div>`}</div>`; }
+function renderKnockout(){ const rounds=[["r32","Round of 32",16],["r16","Round of 16",8],["qf","Quarters",4],["sf","Semis",2],["f","Final",1]]; document.getElementById("bracket").innerHTML=rounds.map(([key,title,count])=>{ const teams=roundTeams(key); return `<div><div class="roundTitle">${title}</div>${Array.from({length:count},(_,i)=>renderGame(key,i,teams)).join("")}</div>`; }).join(""); const champ=scenario["f_0"]; document.getElementById("championName").innerHTML=champ ? `${logo(champ)} ${champ}` : "No champion selected"; renderScenarioLeaderboard(); }
+function renderScenarioLeaderboard(){ buildStandings(); const pts={r32:Number(document.getElementById("ptsR16")?.value||3),r16:Number(document.getElementById("ptsR16")?.value||3),qf:Number(document.getElementById("ptsQF")?.value||3),sf:Number(document.getElementById("ptsSF")?.value||3),f:Number(document.getElementById("ptsF")?.value||3),champ:Number(document.getElementById("ptsChamp")?.value||0)}; const picks=Object.entries(scenario).map(([id,winner])=>({round:id.split("_")[0],winner})).filter(x=>x.winner); if(scenario["f_0"]) picks.push({round:"champ",winner:scenario["f_0"]}); const rows=app.standings.map(r=>{ const bonus=picks.reduce((sum,p)=>sum+(r.teams.map(normTeam).includes(p.winner)?pts[p.round]:0),0); return {...r,scenarioBonus:bonus,scenarioScore:r.current+bonus}; }).sort((a,b)=>b.scenarioScore-a.scenarioScore||b.current-a.current||b.playerGoals-a.playerGoals); document.getElementById("scenarioTable").innerHTML=`<thead><tr><th>Rank</th><th>Owner</th><th class="num">Current</th><th class="num">What‑If</th><th class="num">Score</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td class="rank">${i+1}</td><td><b>${r.label}</b></td><td class="num pts">${r.current}</td><td class="num games">${r.scenarioBonus}</td><td class="num proj">${r.scenarioScore}</td></tr>`).join("")}</tbody>`; }
+function resetScenario(){ scenario={}; saveScenario(); render(); }
+function render(){ renderLeaderboard(); renderPlayers(); renderTeams(); renderTeamOwnership(); renderMatches(); renderStats(); renderKnockout(); }
+async function loadData(){ document.getElementById("statusBox").innerHTML=`<div class="notice ok">Loading ESPN match data...</div>`; try{ const res=await fetch(ESPN_URL,{cache:"no-store"}); if(!res.ok) throw new Error(`ESPN request failed: ${res.status}`); const data=await res.json(); app={...app,...processEvents(data.events||[])}; render(); document.getElementById("lastUpdated").textContent=`Updated ${new Date().toLocaleString()}`; document.getElementById("statusBox").innerHTML=`<div class="notice ok">${(data.events||[]).length} matches loaded. Auto-refresh runs every 60 seconds.</div>`; }catch(err){ document.getElementById("statusBox").innerHTML=`<div class="notice err"><b>Could not load ESPN data.</b><br>${err.message}<br>Host this on GitHub Pages rather than opening locally on iPhone.</div>`; render(); } }
+document.querySelectorAll(".tab").forEach(tab=>tab.addEventListener("click",()=>{ document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active")); document.querySelectorAll(".view").forEach(v=>v.classList.add("hidden")); tab.classList.add("active"); document.getElementById(tab.dataset.tab).classList.remove("hidden"); }));
+["ptsR16","ptsQF","ptsSF","ptsF","ptsChamp"].forEach(id=>document.addEventListener("input",e=>{ if(e.target.id===id) renderScenarioLeaderboard(); }));
+document.addEventListener("change",e=>{ if(e.target.id==="currentRound") render(); });
+loadData(); setInterval(loadData,60000);
+</script>
+</body>
+</html>
